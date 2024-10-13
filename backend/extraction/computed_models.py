@@ -3,10 +3,32 @@ from sqlmodel import Field, SQLModel
 from pydantic import BaseModel, computed_field
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
+from typing import Optional, List
+from sqlmodel import Field, SQLModel
+from pydantic import BaseModel, AliasPath
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-load_dotenv()
-uri = os.getenv("LOGOSDB_CONNECTION_STRING")
-engine = create_engine(uri)
+class BibleReference(BaseModel):
+    """ Basic structure for handling scripture references """
+    book: str
+    chapter: int
+    verse: int
+
+class Translation(SQLModel, table=True):
+    """ A translation of the Bible """
+    id: Optional[int] = Field(primary_key=True, default=None)
+    name: str
+    language: Optional[str] = None
+
+class Book(SQLModel, table=True):
+    """ A book of the Bible. Note that the name field is never in English. Use name_in_english instead. """
+    id: Optional[int] = Field(primary_key=True, default=None)
+    name: Optional[str] = Field(default=None, alias="original_name")
+    name_in_english: str = Field(alias="english_name")
+
+
+engine = create_engine("postgresql://anthropos:humanity@localhost:5432/logosdb")
 session = Session(engine)
 
 
@@ -56,3 +78,6 @@ class RetrievedScripture(BaseModel):
     @property
     def verses(self) -> List[Verse]:
         return fetch_scripture(self.reference.book, self.reference.chapter, self.reference.verse)
+
+
+returned_scripture = RetrievedScripture(book="Genesis", chapter=1, verse=1)

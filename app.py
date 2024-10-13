@@ -19,7 +19,6 @@ from backend.websocket.callback import StreamingLLMCallbackHandler
 from backend.websocket.query_data import get_chain
 from backend.chains.base_chat import stream_agent_responses
 from backend.database.sqlalchemy_models import Translation as TranslationData, Book as BookData, Verse as VerseData, TranslationBook
-from backend.websocket.connection_manager import ConnectionManager
 
 app = FastAPI()
 
@@ -39,6 +38,25 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Database session
 session = get_session()
 
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        await websocket.send_text(message)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            await connection.send_text(message)
+
+
 # Websocket connection manager
 connection_manager = ConnectionManager()
 
@@ -46,7 +64,7 @@ connection_manager = ConnectionManager()
 @app.get("/transaltions")
 async def index(request: Request):
     translations = session.query(TranslationData).all()
-    return templates.TemplateResponse('index.html', {"request": request, "translations": translations})
+    return templates.TemplateResponse('translations.html', {"request": request, "translations": translations})
 
 @app.get("/books/{translation_id}")
 async def books(request: Request, translation_id: int):
@@ -60,12 +78,7 @@ async def verses(request: Request, book_id: int, chapter: int):
 
 @app.get("/")
 async def index(request: Request):
-    return templates.TemplateResponse("websocket.html", {"request": request})
-
-
-@app.get("/test")
-async def test_chat(request: Request):
-    return templates.TemplateResponse("websocket.html", {"request": request})
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.websocket("/ws")

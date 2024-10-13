@@ -10,9 +10,9 @@ from langgraph.prebuilt import create_react_agent
 from langchain_core.tools import tool
 from starlette.responses import StreamingResponse
 from pydantic import BaseModel, Field, computed_field
-from ..database.sqlalchemy_models import Translation as TranslationData, Book as BookData, Verse as VerseData, TranslationBook
-from ..extraction.inferred_models import Book, Chapter, Verse, Translation
-from ..database.dbconnection import get_session
+from .database.sqlalchemy_models import Translation as TranslationData, Book as BookData, Verse as VerseData, TranslationBook
+from .extraction.inferred_models import Book, Chapter, Verse, Translation
+from .database.dbconnection import get_session
 from sqlalchemy import select
 
 session = get_session()
