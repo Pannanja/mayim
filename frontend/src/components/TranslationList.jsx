@@ -17,7 +17,7 @@ const TranslationList = () => {
       <ul>
         {translations.map((translation) => (
           <li key={translation.id}>
-            <Link to={`/books/${translation.id}`}>{translation.name}</Link>
+            <Link to={`/translations`}></Link>
           </li>
         ))}
       </ul>
