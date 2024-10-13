@@ -12,6 +12,7 @@ from websocket import StreamingLLMCallbackHandler
 from websocket import get_chain
 from websocket import ChatResponse
 from websocket import ConnectionManager
+from database.sqlalchemy_models import Translation as TranslationData, Book as BookData, Verse as VerseData, TranslationBook
 
 from api.chat import router as chat_router
 

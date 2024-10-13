@@ -8,8 +8,18 @@ const ChatBox = () => {
 
   useEffect(() => {
     const ws = connectToWebSocket((newMessage) => {
+      // if the message is from the bot, append the token to the last message
+      
       if (newMessage.sender === "bot") {
-        setMessages((prevMessages) => [...prevMessages, { sender: 'Chatbot', text: newMessage.message }]);
+        console.log(newMessage);
+        if (newMessage.type === "start")
+          setMessages((prevMessages) => [...prevMessages, { sender: 'Chatbot', text: newMessage.message }]);
+        else if (newMessage.type === "stream")
+          setMessages((prevMessages) => [...prevMessages.slice(0, prevMessages.length - 1), { sender: 'Chatbot', text: prevMessages[prevMessages.length - 1].text + newMessage.message }]);
+        else if (newMessage.type === "end")
+          setMessages((prevMessages) => [...prevMessages, { sender: 'Chatbot', text: prevMessages[prevMessages.length - 1].text + newMessage.message }]);
+        else
+          setMessages((prevMessages) => [...prevMessages, { sender: 'Chatbot', text: newMessage.message }]);
       }
     });
     setSocket(ws);
