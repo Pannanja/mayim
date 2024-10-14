@@ -12,7 +12,8 @@ from websocket import StreamingLLMCallbackHandler
 from websocket import get_chain
 from websocket import ChatResponse
 from websocket import ConnectionManager
-from database.sqlalchemy_models import Translation as TranslationData, Book as BookData, Verse as VerseData, TranslationBook
+from schemas.bible import Translation, Book, Verse, BibleReference, Chapter, TranslationBook
+
 
 from api.chat import router as chat_router
 
@@ -36,26 +37,65 @@ session = get_session()
 # Websocket connection manager
 connection_manager = ConnectionManager()
 
+
+def get_all_translations(session: Session) -> List[Translation]:
+    """Retrieve all translations from the database."""
+    translations = session.query(Translation).all()
+    return translations
+
+def get_books_by_translation(session: Session, translation_id: int) -> List[Book]:
+    """Retrieve books by translation ID."""
+    books = session.query(Book).join(Translation, Book.id == Translation.id).filter(Translation.id == translation_id).all()
+    return books
+    books = session.query(Book).join(TranslationBook, Book.id == TranslationBook.book_id).filter(TranslationBook.translation_id == translation_id).all()
+    return books
+
+def get_verses_by_book_and_chapter(session: Session, book_id: int, chapter: int) -> List[Verse]:
+    """Retrieve verses by book ID and chapter."""
+    verses = session.query(Verse).filter_by(book_id=book_id, chapter=chapter).all()
+    return verses
+
+def get_translation_by_id(session: Session, translation_id: int) -> Optional[Translation]:
+    """Retrieve a specific translation by ID."""
+    translation = session.query(Translation).filter_by(id=translation_id).first()
+    return translation
+
+def get_book_by_id(session: Session, book_id: int) -> Optional[Book]:
+    """Retrieve a specific book by ID."""
+    book = session.query(Book).filter_by(id=book_id).first()
+    return book
+
+def get_verse_by_id(session: Session, verse_id: int) -> Optional[Verse]:
+    """Retrieve a specific verse by ID."""
+    verse = session.query(Verse).filter_by(id=verse_id).first()
+    return verse
+
+@app.get("/")
+async def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
 # app.include_router(chat_router)
-
 @app.get("/translations")
-async def index(request: Request):
-    translations = session.query(TranslationData).all()
-    return templates.TemplateResponse('translations.html', {"request": request, "translations": translations})
+async def get_translations(request: Request):
+    translations = get_all_translations(session)
+    return translations
 
-@app.get("/books/{translation_id}")
+@app.get("/books/{translation_id}", response_model=List[Book])
 async def books(request: Request, translation_id: int):
-    books = session.query(BookData).join(TranslationBook).filter(TranslationBook.translation_id == translation_id).all()
-    return templates.TemplateResponse('books.html', {"request": request, "books": books, "translation_id": translation_id})
+    books = get_books_by_translation(session, translation_id)
+    return books
+
+@app.get("/books/{book_id}/{chapter}", response_model=List[Verse])
+async def verses(request: Request, book_id: int, chapter: int):
+    verses = get_verses_by_book_and_chapter(session, book_id, chapter)
+    return verses
 
 @app.get("/verses/{book_id}/{chapter}")
 async def verses(request: Request, book_id: int, chapter: int):
-    verses = session.query(VerseData).filter_by(book_id=book_id, chapter=chapter).all()
-    return templates.TemplateResponse('verses.html', {"request": request, "verses": verses, "book_id": book_id, "chapter": chapter})
+    verses = get_verses_by_book_and_chapter(session, book_id, chapter)
+    return verses
 
-@app.get("/")
-async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.websocket("/ws")
 async def open_websocket(websocket: WebSocket):
@@ -88,4 +128,4 @@ async def open_websocket(websocket: WebSocket):
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

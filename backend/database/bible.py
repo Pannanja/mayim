@@ -1,5 +1,5 @@
 from typing import Optional, List
-from sqlmodel import Field, SQLModel, Relationship
+from sqlmodel import Field, SQLModel, select
 from pydantic import BaseModel, AliasPath
 
 class BibleReference(SQLModel, table=False):
@@ -22,8 +22,8 @@ class Translation(SQLModel, table=True):
 class Book(SQLModel, table=True):
     """ A book of the Bible. Note that the name field is never in English. Use name_in_english instead. """
     id: Optional[int] = Field(primary_key=True, default=None)
-    name: str = Field(default=None, alias="original_name")
-    name_in_english: Optional[str] = Field(alias="english_name", default=None)
+    name: Optional[str] = Field(default=None, alias="original_name")
+    name_in_english: str = Field(alias="english_name")
 
 class Verse(SQLModel, table=True):
     """ A verse of scripture """
@@ -32,10 +32,3 @@ class Verse(SQLModel, table=True):
     chapter: int
     verse: int
     text: str
-
-
-class TranslationBook(SQLModel, table=True):
-    """ A table that links translations to books """
-    id: int = Field(primary_key=True)
-    translation_id: int = Field(foreign_key="translation.id") 
-    book_id: int = Field(foreign_key="book.id")
