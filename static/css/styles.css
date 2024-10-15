@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'protosinaitic_1regular';
+    src: url('../fonts/proto-sinaitic_15-webfont.woff2') format('woff2'),
+         url('../fonts/proto-sinaitic_15-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
