@@ -14,10 +14,10 @@ const Translations = () => {
         }
         const data = await response.json();
         console.log('Fetched data:', data);
-        if (Array.isArray(data.translations)) {
-          setTranslations(data.translations);
+        if (Array.isArray(data)) {
+          setTranslations(data);
         } else {
-          console.error('Expected an array but got:', data.translations);
+          console.error('Expected an array but got:', data);
           setTranslations([]);
         }
       } catch (error) {
@@ -37,7 +37,7 @@ const Translations = () => {
     <div>
       <h1>Translations</h1>
       <ul>
-        {Array.isArray(translations) ? (
+        {translations.length > 0 ? (
           translations.map((translation) => (
             <li key={translation.id} onClick={() => handleClick(translation.id)}>
               {translation.name} ({translation.language})

@@ -45,8 +45,6 @@ def get_all_translations(session: Session) -> List[Translation]:
 
 def get_books_by_translation(session: Session, translation_id: int) -> List[Book]:
     """Retrieve books by translation ID."""
-    books = session.query(Book).join(Translation, Book.id == Translation.id).filter(Translation.id == translation_id).all()
-    return books
     books = session.query(Book).join(TranslationBook, Book.id == TranslationBook.book_id).filter(TranslationBook.translation_id == translation_id).all()
     return books
 
@@ -86,12 +84,7 @@ async def books(request: Request, translation_id: int):
     books = get_books_by_translation(session, translation_id)
     return books
 
-@app.get("/books/{book_id}/{chapter}", response_model=List[Verse])
-async def verses(request: Request, book_id: int, chapter: int):
-    verses = get_verses_by_book_and_chapter(session, book_id, chapter)
-    return verses
-
-@app.get("/verses/{book_id}/{chapter}")
+@app.get("/verses/{book_id}/{chapter}", response_model=List[Verse])
 async def verses(request: Request, book_id: int, chapter: int):
     verses = get_verses_by_book_and_chapter(session, book_id, chapter)
     return verses
