@@ -36,6 +36,7 @@ class Verse(SQLModel, table=True):
 
 class TranslationBook(SQLModel, table=True):
     """ A table that links translations to books """
+    __tablename__ = "translation_book"
     id: int = Field(primary_key=True)
     translation_id: int = Field(foreign_key="translation.id") 
     book_id: int = Field(foreign_key="book.id")
