@@ -1,15 +1,16 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import Translations from './Translations';
-import Books from './Books';
-import Verses from './Verses';
+import Translations from '../Translations/Translations';
+import Books from '../Books/Books';
+import Verses from '../Verses/Verses';
+import './BibleBrowser.css';
 
 const BibleBrowser = () => {
   return (
     <Router>
       <div>
         {/* Navigation Menu */}
-        <nav style={{ marginBottom: '20px' }}>
+        <nav className='ScriptureNav'>
           <Link to="/translations">Translations</Link> |{' '}
           <Link to="/books/1">Books for Translation 1</Link> |{' '}
           <Link to="/verses/1/1">Verses for Book 1, Chapter 1</Link>

@@ -1,0 +1,48 @@
+/* Styling for ScriptureNav with an ancient scriptural theme */
+
+.ScriptureNav {
+    background-color: #e4ab31; /* Beige background for an ancient parchment feel */
+    border: 2px solid #8b4513; /* Dark brown border to resemble old scrolls */
+    padding: 20px;
+    font-family: 'Garamond', serif; /* Fonts that give an ancient scriptural look */
+    color: #4b2e83; /* Deep purple color for text */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    margin: 10px; /* Margin for spacing */
+    margin-bottom: 30px;
+}
+
+.ScriptureNav h1, .ScriptureNav h2, .ScriptureNav h3 {
+    font-family: 'Garamond', serif;
+    color: #4b2e83;
+}
+
+.ScriptureNav a {
+    color: #8b4513; /* Dark brown links */
+    text-decoration: none;
+}
+
+.ScriptureNav a:hover {
+    text-decoration: underline;
+}
+
+.ScriptureNav ul {
+    list-style-type: none; /* Remove default list styling */
+    padding: 0;
+}
+
+.ScriptureNav li {
+    margin: 10px 0;
+}
+
+.ScriptureNav button {
+    background-color: #8b4513; /* Dark brown button */
+    color: #f5f5dc; /* Beige text */
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: 'Papyrus', 'Garamond', serif;
+}
+
+.ScriptureNav button:hover {
+    background-color: #a0522d; /* Slightly lighter brown on hover */
+}

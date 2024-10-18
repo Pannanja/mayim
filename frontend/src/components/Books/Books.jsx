@@ -1,5 +1,7 @@
+import './Books.css';
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Scroll from './Scroll'; // Import the Scroll component
 
 const Books = () => {
   const [books, setBooks] = useState([]);
@@ -35,20 +37,21 @@ const Books = () => {
   };
 
   return (
-    <div>
-      <h1>Books</h1>
-      <ul>
-        {Array.isArray(books) ? (
-          books.map((book) => (
-            <li key={book.id} onClick={() => handleClick(book.id)}>
-              {book.name_in_english}
-            </li>
-          ))
-        ) : (
-          <li>No books available</li>
-        )}
-      </ul>
-    </div>
+    <Scroll>
+      <div className="ScriptureScroll">
+        <ul>
+          {Array.isArray(books) ? (
+            books.map((book) => (
+              <li key={book.id} onClick={() => handleClick(book.id)}>
+                {book.name_in_english}
+              </li>
+            ))
+          ) : (
+            <li>No books available</li>
+          )}
+        </ul>
+      </div>
+    </Scroll>
   );
 };
 

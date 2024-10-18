@@ -1,6 +1,7 @@
+import './Verses.css';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useCurrentChapter } from '../context/CurrentChapterContext';
+import { useCurrentChapter } from '../../context/CurrentChapterContext';
 
 const Verses = () => {
   const [verses, setVerses] = useState([]);
@@ -33,7 +34,7 @@ const Verses = () => {
   }, [bookId, chapter, setCurrentChapter]);
 
   return (
-    <div>
+    <div className="StoneTable">
       <h2>Chapter</h2>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>

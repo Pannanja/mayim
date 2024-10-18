@@ -1,6 +1,7 @@
 import React from 'react';
-import { useReferences } from '../context/ReferenceContext';
-import { useCurrentChapter } from '../context/CurrentChapterContext';
+import { useReferences } from '../../context/ReferenceContext';
+import { useCurrentChapter } from '../../context/CurrentChapterContext';
+import './ReferenceList.css'; // Import the CSS file
 
 const ReferenceList = () => {
   const { references, addReference, removeReference } = useReferences();
@@ -20,14 +21,14 @@ const ReferenceList = () => {
   };
 
   return (
-    <div>
+    <div className="reference-list">
       <h2>Reference List</h2>
-      <button onClick={importCurrentChapter}>Import Current Chapter</button>
+      <button className="import-button" onClick={importCurrentChapter}>Import Current Chapter</button>
       <ul>
         {references.map((ref, index) => (
-          <li key={index}>
+          <li key={index} className="reference-cloud">
             {ref.book} Chapter {ref.chapter}
-            <button onClick={() => removeReference(index)}>Remove</button>
+            <button className="remove-button" onClick={() => removeReference(index)}>X</button>
           </li>
         ))}
       </ul>

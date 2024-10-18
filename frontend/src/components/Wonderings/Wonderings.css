@@ -1,0 +1,68 @@
+.wonderings-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+
+.wondering-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  position: absolute;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.wondering-dot.expanded {
+  transform: scale(1.25); /* Scale up the dot */
+  background-color: #1a1a2e;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+}
+
+.wondering-question {
+  color: #dcdcdc; /* Pale silver color */
+  font-family: 'Arial', sans-serif;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.wondering-dot.expanded .wondering-question {
+  opacity: 1;
+}
+
+/* Scatter the dots around the available space */
+.wondering-dot:nth-child(1) {
+  top: 10%;
+  left: 20%;
+}
+
+.wondering-dot:nth-child(2) {
+  top: 30%;
+  left: 50%;
+}
+
+.wondering-dot:nth-child(3) {
+  top: 50%;
+  left: 30%;
+}
+
+.wondering-dot:nth-child(4) {
+  top: 70%;
+  left: 60%;
+}
+
+.wondering-dot:nth-child(5) {
+  top: 90%;
+  left: 10%;
+}

@@ -1,0 +1,14 @@
+.StoneTable {
+    background-color: #868584; /* Tan color to resemble stone */
+    border: 2px solid #646361; /* Dark brown border to give a carved look */
+    border-radius: 10px; /* Rounded corners to mimic stone edges */
+    padding: 20px; /* Padding for spacing */
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+    font-family: 'Times New Roman', Times, serif; /* Classic font for scripture */
+    color: #4b2e2e; /* Dark color for text */
+    text-align: center; /* Centered text */
+  }
+  
+  .StoneTable h1, .StoneTable h2, .StoneTable h3, .StoneTable p {
+    margin: 10px 0; /* Margin for headings and paragraphs */
+  }

@@ -1,0 +1,18 @@
+.ScriptureScroll {
+    background-color: #ecc36a; /* Light wheat color to resemble parchment */
+    border: 2px solid #dda641; /* Dark brown border for an aged look */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Padding for spacing */
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+    font-family: 'Garamond', 'Times New Roman', Times, serif; /* Classic font for ancient text */
+    color: #4b2e2e; /* Dark color for text */
+    text-align: left; /* Left-aligned text */
+    line-height: 1.6; /* Increased line height for readability */
+    width: 80%; /* Full width */
+    background-size: cover; /* Ensure the texture covers the entire element */
+    margin: 0 10px;
+  }
+  
+  .ScriptureScroll h1, .ScriptureScroll h2, .ScriptureScroll h3, .ScriptureScroll p {
+    margin: 10px 0; /* Margin for headings and paragraphs */
+  }
