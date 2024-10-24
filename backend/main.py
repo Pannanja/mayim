@@ -10,11 +10,14 @@ from typing import List, Optional
 from utilities.dbconnection import get_session
 from websocket import StreamingLLMCallbackHandler
 from websocket import get_chain
+from websocket.graph import invoke_our_graph
+from utilities.cust_logger import logger, set_files_message_color
 from websocket import ChatResponse
 from websocket import ConnectionManager
 from schemas.bible import Translation, Book, Verse, BibleReference, Chapter, TranslationBook
 from database.queries import get_all_translations, get_books_by_translation, get_verses_by_book_and_chapter
-
+import json
+from datetime import datetime
 from api.chat import router as chat_router
 
 app = FastAPI()
@@ -60,32 +63,46 @@ async def verses(request: Request, book_id: int, chapter: int):
     return verses
 
 
+# WebSocket endpoint for real-time communication with the frontend
 @app.websocket("/ws")
-async def open_websocket(websocket: WebSocket):
-    await connection_manager.connect(websocket)
-    stream_handler = StreamingLLMCallbackHandler(websocket)
-    qa_chain = get_chain(stream_handler)
+async def websocket_endpoint(websocket: WebSocket):
+    # unless described (error) logging is in {"timestamp": "YYYY-MM-DDTHH:MM:SS.MS", "uuid": "", "op": ""} format,
+    # {timestamp, designated uuid, and what operation was done}
+
+    await websocket.accept()  # Accept ANY WebSocket connection
+    user_uuid = None  # Placeholder for the conversation UUID
     try:
         while True:
-            user_msg = await websocket.receive_text()
-            resp = ChatResponse(sender="human", message=user_msg, type="stream")
-            await websocket.send_json(resp.dict())
+            data = await websocket.receive_text()  # Receive message from client
+            # Log the received data in {"timestamp": "YYYY-MM-DDTHH:MM:SS.MS", "uuid": "", "received": {"uuid": "", "init": bool}} format
+            logger.info(json.dumps({"timestamp": datetime.now().isoformat(), "uuid": user_uuid, "received": json.loads(data)}))
 
-            start_resp = ChatResponse(sender="bot", message="", type="start")
-            await websocket.send_json(start_resp.dict())
+            try:
+                # parse the data extracting the UUID and Message and if its the first message of the conversation
+                payload = json.loads(data)
+                user_uuid = payload.get("uuid")
+                message = payload.get("message")
+                init = payload.get("init", False)
 
-            # Await the coroutine to get the response
-            response = await qa_chain.acall({"input": user_msg})
-            for token in response.get("tokens", []):
-                stream_resp = ChatResponse(sender="bot", message=token, type="stream")
-                await websocket.send_json(stream_resp.dict())
-
-            end_resp = ChatResponse(sender="bot", message="", type="end")
-            await websocket.send_json(end_resp.dict())
-    except WebSocketDisconnect:
-        connection_manager.disconnect(websocket)
-        await websocket.close()
-    except ConnectionClosedOK:
-        logging.info("ConnectionClosedOK")
-        await websocket.close()
+                # If it's the first message, log the conversation initialization process
+                if init:
+                    logger.info(json.dumps({"timestamp": datetime.now().isoformat(), "uuid": user_uuid, "op": "Initializing ws with client."}))
+                else:
+                    if message:
+                        # If a message is provided, invoke the LangGraph, websocket for send, user message, and passing conversation ID
+                        await invoke_our_graph(websocket, message, user_uuid)
+            except json.JSONDecodeError as e:
+                logger.error(json.dumps({"timestamp": datetime.now().isoformat(), "uuid": user_uuid, "op": f"JSON encoding error - {e}"}))
+    except Exception as e:
+        # Catch all other unexpected exceptions and log the error
+        logger.error(json.dumps({"timestamp": datetime.now().isoformat(), "uuid": user_uuid, "op": f"Error: {e}"}))
+    finally:
+        # before the connection is closed, check if its already closed from the client side before trying to close from our side
+        if user_uuid:
+            logger.info(json.dumps({"timestamp": datetime.now().isoformat(), "uuid": user_uuid, "op": "Closing connection."}))
+        try:
+            await websocket.close()
+        except RuntimeError as e:
+            # uncaught connection was already closed error
+            logger.error(json.dumps({"timestamp": datetime.now().isoformat(), "uuid": user_uuid, "op": f"WebSocket close error: {e}"}))
 

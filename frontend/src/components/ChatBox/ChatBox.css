@@ -1,73 +1,122 @@
 .chatbox-container {
-    padding: 10px;
-    background: linear-gradient(to bottom, #1a1a2e, #16213e);
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
-    color: #dcdcdc; /* Pale silver color */
-    font-family: 'Arial', sans-serif;
-  }
-  
-  .chatbox-messages {
-    display: flex;
-    flex-direction: column;
-    height: 150px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-  }
-  
-  .chatbox-messages div {
-    margin-bottom: 5px;
-    padding: 5px 10px;
-    border-radius: 5px;
-    max-width: 70%;
-  }
-  
-  .chatbox-messages .user-message {
-    background-color: #2a2a4e; /* Dark navy color */
-    align-self: flex-end;
-    text-align: right;
-  }
-  
-  .chatbox-messages .bot-message {
-    background-color: #3a3a5e; /* Slightly lighter navy color */
-    align-self: flex-start;
-    text-align: left;
-  }
-  
-  .input-row {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
+  padding: 10px;
+  background: linear-gradient(to bottom, #1a1a2e, #16213e);
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+  color: #dcdcdc; /* Pale silver color */
+  font-family: 'Arial', sans-serif;
+  height: 90vh; /* Full viewport height */
+  display: flex;
+  flex-direction: column;
+  width: 70vw;
 }
-  .chatbox-input {
-    width: calc(100% - 60px);
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-right: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    color: #dcdcdc; /* Pale silver color */
-  }
-  
-  .chatbox-input::placeholder {
-    color: #ccc;
-  }
-  
-  .chatbox-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: #3a3a5e; /* Slightly lighter navy color */
-    color: #dcdcdc; /* Pale silver color */
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .chatbox-button:hover {
-    background-color: #4a4a6e; /* Slightly lighter navy color on hover */
-  }
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.connection-status {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.connection-status.online {
+  background-color: #00ff00; /* Green for online */
+}
+
+.connection-status.offline {
+  background-color: #ff0000; /* Red for offline */
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden; /* Prevent the chat container from scrolling */
+}
+
+.chatbox-messages {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.user-message {
+  align-self: flex-end;
+  background-color: #2a2a4e; /* Dark navy color */
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  max-width: 70%;
+  text-align: right;
+}
+
+.bot-message {
+  align-self: flex-start;
+  background-color: #3a3a5e; /* Slightly lighter navy color */
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  max-width: 70%;
+  text-align: left;
+}
+
+.chat-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+}
+
+.chatbox-input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-right: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #dcdcdc; /* Pale silver color */
+  font-family:  'Arial', sans-serif;
+  font-size: 14px; /* Change the font size */
+}
+
+.chatbox-input::placeholder {
+  color: #ccc;
+  font-family:  'Arial', sans-serif;
+  font-size: 14px; /* Change the font size */
+}
+
+.chatbox-button {
+  padding: 5px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #3a3a5e; /* Slightly lighter navy color */
+  color: #dcdcdc; /* Pale silver color */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.chatbox-button:hover {
+  background-color: #4a4a6e; /* Slightly lighter navy color on hover */
+}
+
+.autoscroll-checkbox {
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+}
