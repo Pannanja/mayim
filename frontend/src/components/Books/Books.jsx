@@ -5,7 +5,7 @@ import Scroll from './Scroll'; // Import the Scroll component
 
 const Books = () => {
   const [books, setBooks] = useState([]);
-  const { translationId } = useParams();
+  const { translationId = 1 } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {

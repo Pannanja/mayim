@@ -1,51 +1,73 @@
 import React, { useState, useEffect } from 'react';
-import { connectToWebSocket, fetchQuestions } from '../../services/websocket';
 import './Wonderings.css'; // Make sure to create and style this CSS file
 
-const defaultQuestions = [
-  "What is the meaning of life?",
-  "How can I find inner peace?",
-  "What is the purpose of suffering?",
-  "How do I connect with my spiritual self?",
-  "What is the nature of the universe?"
+const defaultTopics = [
+  "Afterlife",
+  "Free Will",
+  "Consciousness",
+  "Morality",
+  "Marriage",
 ];
 
-const Wonderings = ({ onAddToChat }) => {
-  const [hoveredIndex, setHoveredIndex] = useState(null);
-  const [questions, setQuestions] = useState(defaultQuestions);
-  const [socket, setSocket] = useState(null);
+const Wondering = ({ topic, onAddToChat }) => {
+  const [question, setQuestion] = useState(topic);
+  const [hovered, setHovered] = useState(false);
 
-  useEffect(() => {
-    const ws = connectToWebSocket((newMessage) => {
-      if (newMessage.type === 'questions') {
-        setQuestions(newMessage.questions);
-      }
-    });
-    setSocket(ws);
+  const fetchQuestion = async () => {
+    const response = await fetch(`/wondering?topic=${topic}`);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let done = false;
+    let buffer = "";
 
-    return () => {
-      ws.close();
-    };
-  }, []);
+    while (!done) {
+      const { value, done: doneReading } = await reader.read();
+      done = doneReading;
+      buffer += decoder.decode(value, { stream: true });
 
-  useEffect(() => {
-    if (socket) {
-      fetchQuestions(socket);
+      // Split the response into individual JSON objects
+      const parsedResponses = buffer.split("\n").filter(Boolean);
+
+      // Process each complete JSON object
+      parsedResponses.forEach((responseStr, index) => {
+        try {
+          const parsedResponse = JSON.parse(responseStr);
+          const content = parsedResponse.message?.content || "";
+          setQuestion((prevQuestion) => (prevQuestion === topic ? content : prevQuestion + content));
+        } catch (error) {
+          if (index === parsedResponses.length - 1) {
+            // If it's the last item and parsing failed, it might be incomplete
+            buffer = responseStr;
+          } else {
+            console.error('Error parsing response:', error);
+          }
+        }
+      });
+
+      // Remove processed JSON objects from the buffer
+      buffer = parsedResponses.length ? parsedResponses[parsedResponses.length - 1] : "";
     }
-  }, [socket]);
+  };
 
   return (
+    <div
+      className={`wondering-dot ${hovered ? 'expanded' : ''}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={fetchQuestion}
+    >
+      <div className="wondering-question" onClick={() => onAddToChat(question)}>
+        {question}
+      </div>
+    </div>
+  );
+};
+
+const Wonderings = ({ onAddToChat }) => {
+  return (
     <div className="wonderings-container">
-      {questions.map((question, index) => (
-        <div
-          key={index}
-          className={`wondering-dot ${hoveredIndex === index ? 'expanded' : ''}`}
-          onMouseEnter={() => setHoveredIndex(index)}
-          onMouseLeave={() => setHoveredIndex(null)}
-          onClick={() => onAddToChat(question)}
-        >
-          <div className="wondering-question">{question}</div>
-        </div>
+      {defaultTopics.map((topic, index) => (
+        <Wondering key={index} topic={topic} onAddToChat={onAddToChat} />
       ))}
     </div>
   );

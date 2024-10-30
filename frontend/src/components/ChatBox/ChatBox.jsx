@@ -3,13 +3,14 @@ import { useWebSocket } from '../../services/useWebSocket'; // Custom hook to ma
 import { useReferences } from '../../context/ReferenceContext';
 import './ChatBox.css'; // Import the CSS file
 
+const url = 'ws://localhost:8000/ws'; // WebSocket server URL
 const ChatBox = () => {
   const [messages, setMessages] = useState([{ user: 'Bot', msg: 'Welcome! How can I be of service today?' }]);
   const [input, setInput] = useState('');
   const { references } = useReferences();
 
   // WebSocket connection logic (message handling & status tracking)
-  const { response, isOpen, sendMessage } = useWebSocket('ws://localhost:8000/ws');
+  const { response, isOpen, sendMessage } = useWebSocket(url);
   const messagesEndRef = useRef(null); // Ref for scrolling to the latest message
   const containerRef = useRef(null); // Ref for the chat container
   const [autoScroll, setAutoScroll] = useState(true);

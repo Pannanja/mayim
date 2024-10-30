@@ -69,3 +69,4 @@ def set_files_message_color(color_name):
     else:
         # edge case if the color formatter wasn't setup properly
         logger.warning(f"Could not find a ColorFormatter attached to the logger")
+

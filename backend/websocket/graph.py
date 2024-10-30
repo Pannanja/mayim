@@ -14,7 +14,7 @@ from langgraph.checkpoint.memory import MemorySaver
 
 from utilities.cust_logger import logger, set_files_message_color
 
-set_files_message_color('MAGENTA')  # Set color for logging in this function
+# set_files_message_color('MAGENTA')  # Set color for logging in this function
 
 # loads and checks if env var exists before continuing to model invocation
 load_dotenv()

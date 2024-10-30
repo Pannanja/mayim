@@ -1,79 +1,98 @@
 # mayim
 
+
+
+## Project Structure
+```
+mayim/ 
+├── backend/ 
+│   ├── app/ 
+│   │   ├── __init__.py 
+│   │   ├── models.py 
+│   │   ├── routes.py 
+│   │   └── ... 
+│   ├── run.py 
+│   ├── requirements.txt 
+│   └── ... 
+├── frontend/ 
+│   ├── public/ 
+│   ├── src/ 
+│   │   ├── components/ 
+│   │   ├── services/ 
+│   │   ├── App.js 
+│   │   ├── index.js 
+│   │   └── ... 
+│   ├── package.json 
+│   └── ... 
+├── .env 
+├── .gitignore 
+├── README.md 
+└── ...
+```
+
 ## Installation
 
-Install the LangChain CLI if you haven't yet
+### Prerequisites
 
+- Python 3.12
+- Node.js and npm
+
+### Backend Setup
+
+1. **Create a Python virtual environment**:
+    ```bash
+    python -m venv venv
+    ```
+
+2. **Activate the virtual environment**:
+    - On Windows:
+      ```bash
+      venv\Scripts\activate
+      ```
+    - On macOS/Linux:
+      ```bash
+      source venv/bin/activate
+      ```
+
+3. **Install Python dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+### Frontend Setup
+
+Navigate to the frontend directory and install dependencies:
 ```bash
-pip install -U langchain-cli
+cd frontend
+npm install
 ```
 
-## Adding packages
+## Startup
 
+### Backend Startup
+
+Navigate to the backend directory and run the backend server:
 ```bash
-# adding packages from 
-# https://github.com/langchain-ai/langchain/tree/master/templates
-langchain app add $PROJECT_NAME
-
-# adding custom GitHub repo packages
-langchain app add --repo $OWNER/$REPO
-# or with whole git string (supports other git providers):
-# langchain app add git+https://github.com/hwchase17/chain-of-verification
-
-# with a custom api mount point (defaults to `/{package_name}`)
-langchain app add $PROJECT_NAME --api_path=/my/custom/path/rag
+cd backend
+python run.py
 ```
 
-Note: you remove packages by their api path
+### Frontend Startup
 
+Navigate to the frontend directory and start the frontend development server:
 ```bash
-langchain app remove my/custom/path/rag
+cd frontend
+npm start
 ```
 
-## Setup LangSmith (Optional)
-LangSmith will help us trace, monitor and debug LangChain applications. 
-You can sign up for LangSmith [here](https://smith.langchain.com/). 
-If you don't have access, you can skip this section
+## Environment Variables
 
+Ensure you have a `.env` file in the root directory with the necessary content. Copy example.env and rename it to ".env". Add your own API keys as needed.
 
-```shell
-export LANGCHAIN_TRACING_V2=true
-export LANGCHAIN_API_KEY=<your-api-key>
-export LANGCHAIN_PROJECT=<your-project>  # if not specified, defaults to "default"
-```
+## Additional Information
 
-## Launch LangServe
+- **Virtual Environment**: It's recommended to use a Python virtual environment to manage dependencies and avoid conflicts with other projects.
+- **Node.js**: Ensure you have Node.js and npm installed on your system. You can download them from [nodejs.org](https://nodejs.org/).
+- **Environment Variables**: The `.env` file should contain the necessary API keys and database connection strings for the project.
 
-```bash
-langchain serve
-```
-
-## Running in Docker
-
-This project folder includes a Dockerfile that allows you to easily build and host your LangServe app.
-
-### Building the Image
-
-To build the image, you simply:
-
-```shell
-docker build . -t my-langserve-app
-```
-
-If you tag your image with something other than `my-langserve-app`,
-note it for use in the next step.
-
-### Running the Image Locally
-
-To run the image, you'll need to include any environment variables
-necessary for your application.
-
-In the below example, we inject the `OPENAI_API_KEY` environment
-variable with the value set in my local environment
-(`$OPENAI_API_KEY`)
-
-We also expose port 8080 with the `-p 8080:8080` option.
-
-```shell
-docker run -e OPENAI_API_KEY=$OPENAI_API_KEY -p 8080:8080 my-langserve-app
-```
+By following these instructions, you should be able to set up and run the Mayim project successfully. If you encounter any issues, please refer to the documentation or seek help from the project maintainers.

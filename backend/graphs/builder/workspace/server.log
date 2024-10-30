@@ -1,0 +1,24 @@
+2024-10-28 13:05:13 - b''2024-10-28 13:05:13 - b" * Serving Flask app 'server'\r\n"2024-10-28 13:05:13 - b' * Debug mode: on\r\n'2024-10-28 14:41:26 - [Errno 2] No such file or directory: 'graph.json'2024-10-28 14:41:26 - 
+2024-10-28 14:41:26 - Thread crashed: [Errno 2] No such file or directory: 'graph.json'2024-10-28 14:41:26 - 
+2024-10-28 14:44:33 - [Errno 2] No such file or directory: 'graph.json'2024-10-28 14:44:33 - 
+2024-10-28 14:44:33 - Thread crashed: [Errno 2] No such file or directory: 'graph.json'2024-10-28 14:44:33 - 
+2024-10-28 14:45:06 - [Errno 2] No such file or directory: 'graph.json'2024-10-28 14:45:06 - 
+2024-10-28 14:45:06 - Thread crashed: [Errno 2] No such file or directory: 'graph.json'2024-10-28 14:45:06 - 
+2024-10-28 14:45:19 - invalid syntax (<string>, line 1)2024-10-28 14:45:19 - 
+2024-10-28 14:45:19 - Thread crashed: invalid syntax (<string>, line 1)2024-10-28 14:45:19 - 
+2024-10-28 14:45:39 - invalid syntax (<string>, line 1)2024-10-28 14:45:39 - 
+2024-10-28 14:45:39 - Thread crashed: invalid syntax (<string>, line 1)2024-10-28 14:45:39 - 
+2024-10-28 14:46:53 - invalid syntax (<string>, line 1)2024-10-28 14:46:53 - 
+2024-10-28 14:46:53 - Thread crashed: invalid syntax (<string>, line 1)2024-10-28 14:46:53 - 
+2024-10-28 14:47:38 - b''2024-10-28 14:47:38 - b" * Serving Flask app 'server'\r\n"2024-10-28 14:47:38 - b' * Debug mode: on\r\n'2024-10-28 14:51:05 - invalid syntax (<string>, line 1)2024-10-28 14:51:05 - 
+2024-10-28 14:51:05 - Thread crashed: invalid syntax (<string>, line 1)2024-10-28 14:51:05 - 
+2024-10-28 14:55:09 - Start root ID: 12024-10-28 14:55:09 - 
+2024-10-28 14:55:09 - Next node ID: 6, Type: STEP2024-10-28 14:55:09 - 
+2024-10-28 14:55:09 - Choose References 4's next node: Respond 5, Type: STEP2024-10-28 14:55:09 - 
+2024-10-28 14:55:09 - Initial input 6's next node: Check References 3, Type: CONDITION2024-10-28 14:55:09 - 
+2024-10-28 14:55:09 - Check References 3's condition2024-10-28 14:55:09 - 
+2024-10-28 14:55:09 - true will go None2024-10-28 14:55:09 - 
+2024-10-28 14:55:09 - false will go 42024-10-28 14:55:09 - 
+2024-10-28 14:55:09 - Initial input is working...2024-10-28 14:55:09 - 
+2024-10-28 14:55:11 - Ollama call failed with status code 404. Maybe your model is not found and you should pull the model with `ollama pull gemma2`.2024-10-28 14:55:11 - 
+2024-10-28 14:55:11 - Thread crashed: Ollama call failed with status code 404. Maybe your model is not found and you should pull the model with `ollama pull gemma2`.2024-10-28 14:55:11 - 
