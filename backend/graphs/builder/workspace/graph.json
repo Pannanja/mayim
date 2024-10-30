@@ -1,0 +1,87 @@
+{
+  "nodes": [
+    {
+      "uniq_id": "1",
+      "pos_x": -139.38652922327051,
+      "pos_y": 63.14869834892238,
+      "width": 236,
+      "height": 236,
+      "nexts": [
+        "6",
+        "6"
+      ],
+      "type": "START",
+      "name": "Node 1",
+      "description": "",
+      "tool": "",
+      "true_next": null,
+      "false_next": null
+    },
+    {
+      "uniq_id": "3",
+      "pos_x": 413,
+      "pos_y": 65,
+      "width": 236,
+      "height": 236,
+      "nexts": [
+        "5",
+        "5"
+      ],
+      "type": "CONDITION",
+      "name": "Check References",
+      "description": "If references are included, fetch and review them.",
+      "tool": "",
+      "true_next": null,
+      "false_next": "4"
+    },
+    {
+      "uniq_id": "4",
+      "pos_x": 410,
+      "pos_y": 304.20000000000005,
+      "width": 236,
+      "height": 236,
+      "nexts": [
+        "5",
+        "5"
+      ],
+      "type": "STEP",
+      "name": "Choose References",
+      "description": "if no references were given, determine whether to add them.",
+      "tool": "",
+      "true_next": null,
+      "false_next": null
+    },
+    {
+      "uniq_id": "5",
+      "pos_x": 985,
+      "pos_y": -31.799999999999983,
+      "width": 236,
+      "height": 236,
+      "nexts": [],
+      "type": "STEP",
+      "name": "Respond",
+      "description": "Summarize the references given. Output a json in the following format:\n{\"Reference\": \"Genesis 1\",\n\"Summary\": \"The creation story\"}",
+      "tool": "",
+      "true_next": null,
+      "false_next": null
+    },
+    {
+      "uniq_id": "6",
+      "pos_x": 139.94513654809143,
+      "pos_y": 62.080815830642806,
+      "width": 224,
+      "height": 224,
+      "nexts": [
+        "3",
+        "3"
+      ],
+      "type": "STEP",
+      "name": "Initial input",
+      "description": "What is your name?",
+      "tool": "",
+      "true_next": null,
+      "false_next": null
+    }
+  ],
+  "node_counter": 7
+}

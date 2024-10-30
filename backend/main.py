@@ -1,24 +1,22 @@
 import logging
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
-from fastapi.templating import Jinja2Templates
-from websockets.exceptions import ConnectionClosedOK
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import Session
+from websockets.exceptions import ConnectionClosedOK
+import json
+from datetime import datetime
 from typing import List, Optional
 from utilities.dbconnection import get_session
-from websocket import StreamingLLMCallbackHandler
-from websocket import get_chain
 from websocket.graph import invoke_our_graph
-from utilities.cust_logger import logger, set_files_message_color
-from websocket import ChatResponse
+from utilities.cust_logger import logger
 from websocket import ConnectionManager
 from schemas.bible import Translation, Book, Verse, BibleReference, Chapter, TranslationBook
 from database.queries import get_all_translations, get_books_by_translation, get_verses_by_book_and_chapter
-import json
-from datetime import datetime
+from fastapi.responses import RedirectResponse
 from api.chat import router as chat_router
+from graphs.builder.server import router as server_router  # Import the server router
+from graphs.builder.FileTransmit import file_transmit_router  # Import the Blueprint
+
 
 app = FastAPI()
 
@@ -31,22 +29,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-templates = Jinja2Templates(directory="templates")
-# app.mount("/static", StaticFiles(directory="static"), name="static")
-
 # Database session
 session = get_session()
 
-# Websocket connection manager
-connection_manager = ConnectionManager()
-
+app.include_router(chat_router)
+app.include_router(server_router)
+app.include_router(file_transmit_router)
 
 @app.get("/")
 async def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
-
-# app.include_router(chat_router)
+    return RedirectResponse(url="/translations")
 @app.get("/translations")
 async def get_translations(request: Request):
     translations = get_all_translations(session)
@@ -61,7 +53,6 @@ async def books(request: Request, translation_id: int):
 async def verses(request: Request, book_id: int, chapter: int):
     verses = get_verses_by_book_and_chapter(session, book_id, chapter)
     return verses
-
 
 # WebSocket endpoint for real-time communication with the frontend
 @app.websocket("/ws")

@@ -1,85 +1,121 @@
-"""Create a ChatVectorDBChain for question/answering."""
-from langchain.callbacks.manager import AsyncCallbackManager
-from langchain.chains import ConversationChain, ConversationalRetrievalChain
-from langchain.chains.chat_vector_db.prompts import CONDENSE_QUESTION_PROMPT, QA_PROMPT
-from langchain.chains.llm import LLMChain
-from langchain.chains.question_answering import load_qa_chain
+# Anything below this is entirely up to you to change and is flexible to your LangGraph build, drop in replacement
+# `invoke_our_graph` expects the compiled graph to be called `graph_runnable` to work out of the box.
+import sys, os
+from typing import Annotated, TypedDict
+
+from dotenv import load_dotenv
+
 from langchain_ollama import ChatOllama
-from langchain.memory import ConversationBufferMemory
-from langchain.prompts import (
-    ChatPromptTemplate,
-    MessagesPlaceholder,
-    SystemMessagePromptTemplate,
-    HumanMessagePromptTemplate,
-)
+from langchain_core.callbacks import adispatch_custom_event
+from langchain_core.runnables.config import RunnableConfig
+from langgraph.graph import START, END, StateGraph
+from langgraph.graph.message import AnyMessage, add_messages
+from langgraph.checkpoint.memory import MemorySaver
 
+from utilities.cust_logger import logger, set_files_message_color
 
+set_files_message_color('MAGENTA')  # Set color for logging in this function
 
-def get_chain(stream_handler, tracing: bool = False) -> ConversationChain:
-    """Create a ConversationChain for question/answering."""
+# loads and checks if env var exists before continuing to model invocation
+load_dotenv()
+env_var_key = "OPENAI_API_KEY"
+model_path = os.getenv(env_var_key)
 
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            SystemMessagePromptTemplate.from_template(
-                "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know."
-            ),
-            MessagesPlaceholder(variable_name="history"),
-            HumanMessagePromptTemplate.from_template("{input}"),
-        ]
-    )
-    manager = AsyncCallbackManager([])
-    stream_manager = AsyncCallbackManager([stream_handler])
-    streaming_llm = ChatOllama(
+# If the API key is missing, log a fatal error and exit the application, no need to run LLM application without model!
+if not model_path:
+    logger.fatal(f"Fatal Error: The '{env_var_key}' environment variable is missing.")
+    sys.exit(1)
+
+# Initialize the ChatModel LLM
+# ChatModel vs LLM concept https://python.langchain.com/docs/concepts/#chat-models
+# Available ChatModel integrations with LangChain https://python.langchain.com/docs/integrations/chat/
+try:
+    llm = ChatOllama(
         model="llama3.2",
         stream=True,
-        callback_manager=stream_manager,
         verbose=True,
         temperature=0,
         api_key="",
     )
+except Exception as e:
+    # Log error if model initialization fails, exits. no vroom vroom :(
+    logger.fatal(f"Fatal Error: Failed to initialize model: {e}")
+    sys.exit(1)
 
-    memory = ConversationBufferMemory(return_messages=True)
+# This is the default state same as "MessageState" TypedDict but allows us accessibility to custom keys
+class GraphsState(TypedDict):
+    messages: Annotated[list[AnyMessage], add_messages]
+    # Custom keys for additional data can be added here such as - conversation_id: str
 
-    qa = ConversationChain(
-        callback_manager=manager, memory=memory, llm=streaming_llm, verbose=True, prompt=prompt
-    )
+graph = StateGraph(GraphsState)
 
-    return qa
+# This is part of the easter egg! Essentially it will check for specific mention of keywords in the messages
+# and if it exists dispatch an immediate event to the frontend to catch to trigger an action or change in render.
+# This is a clear representation of the flexibility both any frontend and LangGraph can have with WS.
+async def conditional_check(state: GraphsState, config: RunnableConfig):
+    # Try it out! ask the model any of the keywords below and see what happens in the frontend
+    messages = state["messages"]
+    msg = messages[-1].content
+    keywords = ["LangChain", "langchain", "Langchain", "LangGraph", "Langgraph", "langgraph"]
+    if any(keyword in msg for keyword in keywords):
+        # we pass RunnableConfig in case the server is running on Python 3.10 or earlier
+        # https://langchain-ai.github.io/langgraph/how-tos/streaming-tokens/#:~:text=Note%20on%20Python%20%3C%203.11
+        await adispatch_custom_event("on_easter_egg", True, config=config)
+    pass
 
+# Core invocation of the model
+def _call_model(state: GraphsState, config: RunnableConfig):
+    messages = state["messages"]
+    response = llm.invoke(messages, config=config)
+    return {"messages": [response]}
 
-from typing import Annotated, Optional, List
-from typing_extensions import TypedDict
-from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
-from langchain_core.messages import AIMessage, SystemMessage, HumanMessage, ToolMessage
-from langchain_ollama import ChatOllama
-from langgraph.checkpoint.memory import MemorySaver
-from langgraph.prebuilt import create_react_agent
-from langchain_core.tools import tool
+# Define graph nodes and edges for conditional checks and model invocation
+graph.add_node("modelNode", _call_model)
+graph.add_node("conditional_check", conditional_check)
+graph.add_edge(START, "conditional_check")
+graph.add_edge("conditional_check", "modelNode")
+graph.add_edge("modelNode", END)
 
+memory = MemorySaver()  # Checkpointing mechanism to save conversation by thread_id
+                        # https://langchain-ai.github.io/langgraph/how-tos/persistence/
 
-manager = AsyncCallbackManager([])
-stream_manager = AsyncCallbackManager([stream_handler])
-streaming_llm = ChatOllama(
-    model="llama3.2",
-    stream=True,
-    callback_manager=stream_manager,
-    verbose=True,
-    temperature=0,
-    api_key="",
-)
+graph_runnable = graph.compile(checkpointer=memory)
 
-class State(TypedDict):
-    messages: Annotated[list, add_messages]
+# ===========================================================================================================
+# `invoke_our_graph` expects the compiled graph to be called `graph_runnable` to work out of the box. feel free to add your own
+# event actions. Here is the list of available events: https://python.langchain.com/docs/how_to/streaming/#event-reference
+# logs message in {"timestamp": "YYYY-MM-DDTHH:MM:SS.MS", "uuid": "", "llm_method": "", "sent": ""} format
+# except for token streaming due to verbosity
+import json
+from datetime import datetime
+from fastapi import WebSocket
 
-graph_builder = StateGraph(State)
+# Merging WS with LangGraph to invoke the graph and stream results to WebSocket
+async def invoke_our_graph(websocket: WebSocket, data: str, user_uuid: str):
+    initial_input = {"messages": data}
+    thread_config = {"configurable": {"thread_id": user_uuid}}  # Pass users conversation_id to manage chat memory on server side
+    final_text = ""  # accumulate final output to log, rather then each token
 
-def chatbot(state: State):
-    return {"messages": llm.invoke(state["messages"])}
+    # Asynchronous event-based response processing, data designated by event as key
+    async for event in graph_runnable.astream_events(initial_input, thread_config, version="v2"):
+        kind = event["event"]
 
-graph_builder.add_node("chatbot", chatbot)
+        if kind == "on_chat_model_stream":
+            addition = event["data"]["chunk"].content  # gets the token chunk
+            final_text += addition
+            if addition:
+                message = json.dumps({"on_chat_model_stream": addition})
+                await websocket.send_text(message)
 
-graph_builder.add_edge(START, "chatbot")
-graph_builder.add_edge("chatbot", END)
+        elif kind == "on_chat_model_end":
+            # Indicate the end of model generation so FE knows the message is over
+            message = json.dumps({"on_chat_model_end": True})
+            logger.info(json.dumps({"timestamp": datetime.now().isoformat(), "uuid": user_uuid, "llm_method": kind, "sent": final_text}))
+            await websocket.send_text(message)
 
-graph = graph_builder.compile()
+        elif kind == "on_custom_event":
+            # sends across custom event as if its its own event for easy working
+            # check out `conditional_check` node
+            message = json.dumps({event["name"]: event["data"]})
+            logger.info(json.dumps({"timestamp": datetime.now().isoformat(), "uuid": user_uuid, "llm_method": kind, "sent": message}))
+            await websocket.send_text(message)

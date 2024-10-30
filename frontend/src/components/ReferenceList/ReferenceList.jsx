@@ -22,7 +22,7 @@ const ReferenceList = () => {
 
   return (
     <div className="reference-list">
-      <h2>Reference List</h2>
+      <h2>References</h2>
       <button className="import-button" onClick={importCurrentChapter}>Import Current Chapter</button>
       <ul>
         {references.map((ref, index) => (

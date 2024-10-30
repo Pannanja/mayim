@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { generate } from "random-words";
 
-export const useWebSocket = (url, setEE) => {
+export const useWebSocket = (url) => {
     const [response, setResponse] = useState(''); // Stores bot responses
     const [isOpen, setIsOpen] = useState(false); // WebSocket connection status
     const [isBotResponseComplete, setIsBotResponseComplete] = useState(false); // Tracks completion of bot response
@@ -42,10 +42,6 @@ export const useWebSocket = (url, setEE) => {
                 if (data.on_chat_model_end) {
                     setIsBotResponseComplete(true); // Bot streaming is done, message complete
                 }
-
-                if (data.on_easter_egg) {
-                    setEE(true); // Easter egg trigger
-                }
             } catch (error) {
                 console.log('Error parsing WebSocket message:', error);
             }
@@ -67,7 +63,7 @@ export const useWebSocket = (url, setEE) => {
         socket.onerror = (error) => {
             console.log('WebSocket error:', error);
         };
-    }, [url, setEE]); // watches changes to url or App.tsx setting the easter egg
+    }, [url]);
 
     useEffect(() => {
         connectSocket();

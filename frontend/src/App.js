@@ -5,6 +5,7 @@ import ReferenceList from './components/ReferenceList/ReferenceList';
 import { CurrentChapterProvider } from './context/CurrentChapterContext';
 import { ReferenceProvider } from './context/ReferenceContext';
 import Wonderings from './components/Wonderings/Wonderings';
+import GraphApp from './components/Graphs/GraphApp'
 
 function App() {
   const handleAddToChat = (question) => {
@@ -23,11 +24,14 @@ function App() {
               </div>
               <ChatBox />
               <div className="Wonderings-right">
-                <Wonderings onAddToChat={handleAddToChat} />
+                
               </div>
             </div>
             <div className="Clouds">
               <ReferenceList />
+              <div className="graph-container">
+                <GraphApp />
+              </div>
             </div>
             <div className="Stones">
               <BibleBrowser />

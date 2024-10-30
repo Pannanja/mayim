@@ -1,0 +1,12 @@
+python-dotenv
+fastapi
+langgraph
+sqlmodel
+websockets
+langchain
+langchain-core
+langchain-community
+langchain-ollama
+colorama
+uvicorn
+httpx
