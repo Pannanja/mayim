@@ -49,11 +49,13 @@ print("Creating database session...")
 # Database session
 session = get_session()
 
+print("Setting up GraphQL endpoint...")
 # Set up GraphQL endpoint
 graphql_app = GraphQL(schema)
 app.add_route("/graphql", graphql_app)
 app.add_websocket_route("/graphql", graphql_app)
 
+print("Setting up REST API routes...")
 
 @app.get("/translations", response_model=List[Translation])
 async def get_translations(request: Request):
