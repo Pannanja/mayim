@@ -1,12 +1,5 @@
-python-dotenv
+ollama
+psycopg2
+pydantic
 fastapi
-langgraph
-sqlmodel
-websockets
-langchain
-langchain-core
-langchain-community
-langchain-ollama
-colorama
 uvicorn
-httpx

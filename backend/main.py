@@ -1,25 +1,41 @@
 import logging
+import json
+from dotenv import load_dotenv
+from typing import Tuple
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from websockets.exceptions import ConnectionClosedOK
-import json
 from datetime import datetime
 from typing import List, Optional
-from utilities.dbconnection import get_session
-from websocket.graph import invoke_our_graph
-from utilities.cust_logger import logger
-from websocket import ConnectionManager
-from schemas.bible import Translation, Book, Verse, BibleReference, Chapter, TranslationBook
-from database.queries import get_all_translations, get_books_by_translation, get_verses_by_book_and_chapter
-from fastapi.responses import RedirectResponse
-from api.chat import router as chat_router
-from graphs.builder.server import router as server_router  # Import the server router
-from graphs.builder.FileTransmit import file_transmit_router  # Import the Blueprint
+from strawberry.asgi import GraphQL
+from database.dbconnection import get_session
+from database import queries
+from schemas.strawberry_schema import schema
+from schemas.response_models import (
+    Translation,
+    Book,
+    BookWithMetadata,
+    ReferenceType,
+    Reference,
+    ReferenceWithMetadata,
+    Chapter,
+    ChapterWithMetadata,
+    Verse,
+    VerseWithMetadata,
+    VerseWithReferences,
+    Section,
+    SectionWithMetadata,
+    SectionWithReferences
+)
 
+print("Loading environment variables...")
+load_dotenv()
 
+print("Creating FastAPI app...")
 app = FastAPI()
 
+print("Setting up CORS middleware...")
 # Allow all origins (for development purposes)
 app.add_middleware(
     CORSMiddleware,
@@ -29,71 +45,60 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+print("Creating database session...")
 # Database session
 session = get_session()
 
-app.include_router(chat_router)
-app.include_router(server_router)
-app.include_router(file_transmit_router)
+# Set up GraphQL endpoint
+graphql_app = GraphQL(schema)
+app.add_route("/graphql", graphql_app)
+app.add_websocket_route("/graphql", graphql_app)
 
-@app.get("/")
-async def home(request: Request):
-    return RedirectResponse(url="/translations")
-@app.get("/translations")
+
+@app.get("/translations", response_model=List[Translation])
 async def get_translations(request: Request):
-    translations = get_all_translations(session)
+    translations = queries.get_all_translations(session)
     return translations
+
+@app.get("/books", response_model=List[BookWithMetadata])
+async def all_books(request: Request):
+    books = queries.get_all_books(session)
+    return books
 
 @app.get("/books/{translation_id}", response_model=List[Book])
 async def books(request: Request, translation_id: int):
-    books = get_books_by_translation(session, translation_id)
+    books = queries.get_books_by_translation(session, translation_id)
     return books
 
-@app.get("/verses/{book_id}/{chapter}", response_model=List[Verse])
-async def verses(request: Request, book_id: int, chapter: int):
-    verses = get_verses_by_book_and_chapter(session, book_id, chapter)
+@app.get("/book/{book_code}", response_model=List[Chapter])
+async def chapters(request: Request, book_code: str):
+    chapters = queries.get_chapters_by_book(session, book_code)
+    return chapters
+
+@app.get("/book/{book_code}/chapter/{chapter}", response_model=List[Verse])
+async def verses(request: Request, book_code: str, chapter: int):
+    verses = queries.get_verses_by_book_and_chapter(session, book_code, chapter)
     return verses
 
-# WebSocket endpoint for real-time communication with the frontend
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    # unless described (error) logging is in {"timestamp": "YYYY-MM-DDTHH:MM:SS.MS", "uuid": "", "op": ""} format,
-    # {timestamp, designated uuid, and what operation was done}
+@app.get("/book/{book_code}/chapter/{chapter}/{verse}", response_model=VerseWithMetadata)
+async def verse(request: Request, book_code: str, chapter: int, verse: int):
+    verse = queries.get_verse_by_book_chapter_and_verse_number(session, book_code, chapter, verse)
+    return verse
 
-    await websocket.accept()  # Accept ANY WebSocket connection
-    user_uuid = None  # Placeholder for the conversation UUID
-    try:
-        while True:
-            data = await websocket.receive_text()  # Receive message from client
-            # Log the received data in {"timestamp": "YYYY-MM-DDTHH:MM:SS.MS", "uuid": "", "received": {"uuid": "", "init": bool}} format
-            logger.info(json.dumps({"timestamp": datetime.now().isoformat(), "uuid": user_uuid, "received": json.loads(data)}))
+@app.get("/book/{book_code}/chapter/{chapter}/{verse}/references", response_model=VerseWithReferences)
+async def verse_references(request: Request, book_code: str, chapter: int, verse: int):
+    return queries.get_verse_with_references(session, book_code, chapter, verse)
 
-            try:
-                # parse the data extracting the UUID and Message and if its the first message of the conversation
-                payload = json.loads(data)
-                user_uuid = payload.get("uuid")
-                message = payload.get("message")
-                init = payload.get("init", False)
+@app.get("/book/{book_code}/sections", response_model=List[Section])
+async def sections(request: Request, book_code: str):
+    sections = queries.get_sections_by_book(session, book_code)
+    return sections
 
-                # If it's the first message, log the conversation initialization process
-                if init:
-                    logger.info(json.dumps({"timestamp": datetime.now().isoformat(), "uuid": user_uuid, "op": "Initializing ws with client."}))
-                else:
-                    if message:
-                        # If a message is provided, invoke the LangGraph, websocket for send, user message, and passing conversation ID
-                        await invoke_our_graph(websocket, message, user_uuid)
-            except json.JSONDecodeError as e:
-                logger.error(json.dumps({"timestamp": datetime.now().isoformat(), "uuid": user_uuid, "op": f"JSON encoding error - {e}"}))
-    except Exception as e:
-        # Catch all other unexpected exceptions and log the error
-        logger.error(json.dumps({"timestamp": datetime.now().isoformat(), "uuid": user_uuid, "op": f"Error: {e}"}))
-    finally:
-        # before the connection is closed, check if its already closed from the client side before trying to close from our side
-        if user_uuid:
-            logger.info(json.dumps({"timestamp": datetime.now().isoformat(), "uuid": user_uuid, "op": "Closing connection."}))
-        try:
-            await websocket.close()
-        except RuntimeError as e:
-            # uncaught connection was already closed error
-            logger.error(json.dumps({"timestamp": datetime.now().isoformat(), "uuid": user_uuid, "op": f"WebSocket close error: {e}"}))
+@app.get("/book/{book_code}/section/{section_number}", response_model=SectionWithMetadata)
+async def section(request: Request, book_code: str, section_number: int):
+    section = queries.get_section_by_book_and_section_number(session, book_code, section_number)
+    return section
 
+@app.get("/book/{book_code}/section/{section_number}/references", response_model=SectionWithReferences)
+async def section_references(request: Request, book_code: str, section_number: int):
+    return queries.get_section_with_references(session, book_code, section_number)

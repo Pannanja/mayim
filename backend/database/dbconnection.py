@@ -5,8 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
-uri = os.getenv("LOGOSDB_CONNECTION_STRING")
-engine = create_engine(uri)
+engine = create_engine(os.getenv("LOGOSDB_CONNECTION_STRING"))
 Session = sessionmaker(bind=engine)
 
 def get_session():
