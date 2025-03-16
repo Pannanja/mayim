@@ -1,5 +1,13 @@
+python-dotenv
+sqlalchemy
+sqlmodel
 ollama
-psycopg2
+psycopg2-binary
 pydantic
 fastapi
 uvicorn
+strawberry-graphql
+fuzzywuzzy
+python-Levenshtein
+pgvector
+websockets
